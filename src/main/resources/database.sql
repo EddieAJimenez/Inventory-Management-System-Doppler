@@ -9,7 +9,7 @@ CREATE TABLE `customer` (
   `email` varchar(100) NOT NULL,
   `phone` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 -- dopplerdb.order_status definition
@@ -30,21 +30,21 @@ CREATE TABLE `product_type` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
--- dopplerdb.service_status definition
-
-CREATE TABLE `service_status` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `service_status_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
 -- dopplerdb.service definition
 
 CREATE TABLE `service` (
   `id` int NOT NULL AUTO_INCREMENT,
   `service_name` varchar(100) NOT NULL,
   `price` double NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- dopplerdb.service_status definition
+
+CREATE TABLE `service_status` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `service_status_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -59,7 +59,7 @@ CREATE TABLE `order` (
   `total` decimal(10,2) NOT NULL,
   `tax` decimal(10,2) DEFAULT NULL,
   `discount` decimal(10,2) DEFAULT NULL,
-  `requires_installation` tinyint(1) NOT NULL,
+  `requires_installation` tinyint NOT NULL,
   PRIMARY KEY (`id`),
   KEY `order_customer_FK` (`customer_id`),
   KEY `order_order_status_FK` (`order_status_id`),
@@ -82,6 +82,22 @@ CREATE TABLE `product` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
+-- dopplerdb.product_order_detail definition
+
+CREATE TABLE `product_order_detail` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_id` int NOT NULL,
+  `order_id` int NOT NULL,
+  `quantity` int NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `product_order_detail_order_FK` (`order_id`),
+  KEY `product_order_detail_products_FK` (`product_id`),
+  CONSTRAINT `product_order_detail_order_FK` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
+  CONSTRAINT `product_order_detail_products_FK` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
 -- dopplerdb.service_order_detail definition
 
 CREATE TABLE `service_order_detail` (
@@ -97,20 +113,4 @@ CREATE TABLE `service_order_detail` (
   CONSTRAINT `service_order_detail_order_FK` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
   CONSTRAINT `service_order_detail_service_status_FK` FOREIGN KEY (`service_status_id`) REFERENCES `service_status` (`id`),
   CONSTRAINT `service_order_detail_services_FK` FOREIGN KEY (`service_id`) REFERENCES `service` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
--- dopplerdb.product_order_detail definition
-
-CREATE TABLE `product_order_detail` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `product_id` int NOT NULL,
-  `order_id` int NOT NULL,
-  `quantity` int NOT NULL,
-  `subtotal` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `product_order_detail_order_FK` (`order_id`),
-  KEY `product_order_detail_products_FK` (`product_id`),
-  CONSTRAINT `product_order_detail_order_FK` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
-  CONSTRAINT `product_order_detail_products_FK` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

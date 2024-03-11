@@ -9,8 +9,8 @@ public class Service {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "service_name", nullable = false)
+    private String serviceName;
 
     @Column(nullable = false)
     private double price;
@@ -18,8 +18,8 @@ public class Service {
     public Service() {
     }
 
-    public Service(String name, double price) {
-        this.name = name;
+    public Service(String serviceName, double price) {
+        this.serviceName = serviceName;
         this.price = price;
     }
 
@@ -31,12 +31,12 @@ public class Service {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 
     public double getPrice() {
@@ -51,7 +51,7 @@ public class Service {
     public String toString() {
         return "Services{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
+                ", name='" + serviceName + '\'' +
                 ", price=" + price +
                 '}';
     }

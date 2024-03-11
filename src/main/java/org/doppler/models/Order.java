@@ -37,7 +37,7 @@ public class Order {
 
     @Column(name = "requires_installation", nullable = false)
     @Convert(converter = NumericBooleanConverter.class)
-    private Boolean requiresInstallation;
+    private boolean requiresInstallation;
 
     @OneToMany(mappedBy = "orderId")
     private List<ProductOrderDetail> orderProducts;
