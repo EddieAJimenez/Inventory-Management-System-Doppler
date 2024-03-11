@@ -1,6 +1,6 @@
 package org.doppler.db;
 
-import org.doppler.models.Customer;
+import org.doppler.models.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -29,6 +29,14 @@ public class HibernateUtil {
 
                 configuration.setProperties(settings);
                 configuration.addAnnotatedClass(Customer.class);
+                configuration.addAnnotatedClass(Order.class);
+                configuration.addAnnotatedClass(OrderStatus.class);
+                configuration.addAnnotatedClass(Product.class);
+                configuration.addAnnotatedClass(ProductOrderDetail.class);
+                configuration.addAnnotatedClass(ProductType.class);
+                configuration.addAnnotatedClass(Service.class);
+                configuration.addAnnotatedClass(ServiceOrderDetail.class);
+                configuration.addAnnotatedClass(ServiceStatus.class);
 
                 ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                         .applySettings(configuration.getProperties()).build();
