@@ -77,7 +77,7 @@ public class ServiceDao {
 
     public List<Service> getAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("from Services", Service.class).list();
+            return session.createQuery("from Service ", Service.class).list();
         }
     }
 }

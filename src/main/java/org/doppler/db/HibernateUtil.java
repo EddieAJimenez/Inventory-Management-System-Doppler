@@ -21,7 +21,7 @@ public class HibernateUtil {
                 settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
                 settings.put(Environment.URL, "jdbc:mysql://localhost:3306/dopplerdb?useSSL=false");
                 settings.put(Environment.USER, "root");
-                settings.put(Environment.PASS, "rootroot");
+                settings.put(Environment.PASS, "ninguna123");
                 settings.put(Environment.SHOW_SQL, "true");
                 settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
                 settings.put(Environment.ENABLE_LAZY_LOAD_NO_TRANS, "true");
