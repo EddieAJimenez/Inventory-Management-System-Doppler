@@ -88,14 +88,14 @@ CREATE TABLE `service_order_detail` (
   `id` int NOT NULL AUTO_INCREMENT,
   `order_id` int NOT NULL,
   `service_id` int NOT NULL,
-  `subtotal` double NOT NULL,
-  `service_status` int NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  `service_status_id` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `service_order_detail_services_FK` (`service_id`),
   KEY `service_order_detail_order_FK` (`order_id`),
-  KEY `service_order_detail_service_status_FK` (`service_status`),
+  KEY `service_order_detail_service_status_FK` (`service_status_id`),
   CONSTRAINT `service_order_detail_order_FK` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
-  CONSTRAINT `service_order_detail_service_status_FK` FOREIGN KEY (`service_status`) REFERENCES `service_status` (`id`),
+  CONSTRAINT `service_order_detail_service_status_FK` FOREIGN KEY (`service_status_id`) REFERENCES `service_status` (`id`),
   CONSTRAINT `service_order_detail_services_FK` FOREIGN KEY (`service_id`) REFERENCES `service` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -107,7 +107,7 @@ CREATE TABLE `product_order_detail` (
   `product_id` int NOT NULL,
   `order_id` int NOT NULL,
   `quantity` int NOT NULL,
-  `subtotal` double NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `product_order_detail_order_FK` (`order_id`),
   KEY `product_order_detail_products_FK` (`product_id`),
