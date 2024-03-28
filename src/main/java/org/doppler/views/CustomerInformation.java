@@ -23,15 +23,14 @@ public class CustomerInformation extends javax.swing.JPanel {
     public CustomerInformation() {
         initComponents();
         initStyles();
-        loadUsers();
         customerDao = new CustomerDao();
+        loadUsers();
     }
     private void initStyles() {
         title.putClientProperty("FlatLaf.style", "font: 160% $h2.regular.font");
         title.setForeground(Color.black);
     }
     private void loadUsers() {
-        CustomerDao customerDao = new CustomerDao();
         List<Customer> customers = customerDao.getAll();
         DefaultTableModel model = new DefaultTableModel();
 
@@ -80,7 +79,7 @@ public class CustomerInformation extends javax.swing.JPanel {
         title.setBackground(new java.awt.Color(255, 255, 255));
         title.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         title.setForeground(new java.awt.Color(0, 0, 0));
-        title.setText("users");
+        title.setText("Users");
 
         jScrollPane1.setBackground(new java.awt.Color(0, 0, 0));
         jScrollPane1.setForeground(new java.awt.Color(255, 255, 255));

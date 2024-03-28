@@ -29,7 +29,7 @@ public class HibernateUtil {
 
                 configuration.setProperties(settings);
                 configuration.addAnnotatedClass(Customer.class);
-                configuration.addAnnotatedClass(Order.class);
+                configuration.addAnnotatedClass(SaleOrder.class);
                 configuration.addAnnotatedClass(OrderStatus.class);
                 configuration.addAnnotatedClass(Product.class);
                 configuration.addAnnotatedClass(ProductOrderDetail.class);

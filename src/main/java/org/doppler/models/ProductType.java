@@ -14,6 +14,17 @@ public class ProductType {
 
     public ProductType() {
     }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        ProductType productType = (ProductType) obj;
+        return id == productType.id;
+    }
 
     public ProductType(String productTypeName) {
         this.productTypeName = productTypeName;
@@ -37,9 +48,6 @@ public class ProductType {
 
     @Override
     public String toString() {
-        return "ProductType{" +
-                "id=" + id +
-                ", productTypeName='" + productTypeName + '\'' +
-                '}';
+        return id + " - " + productTypeName;
     }
 }

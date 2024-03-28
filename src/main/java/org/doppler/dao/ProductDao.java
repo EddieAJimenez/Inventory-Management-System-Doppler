@@ -8,18 +8,20 @@ import org.hibernate.Transaction;
 import java.util.List;
 
 public class ProductDao {
-    public void save(Product product) {
+    public boolean save(Product product) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
             session.persist(product);
             transaction.commit();
+            return true;
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
+            System.out.println("Error saving the Product: " + e.getMessage());
             e.printStackTrace();
-            throw e;
+            return false;
         }
     }
 
@@ -33,30 +35,34 @@ public class ProductDao {
             if (transaction != null) {
                 transaction.rollback();
             }
+            System.out.println("Error saving the product: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
     }
 
-    public void delete(int id) {
-        Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            Product product = session.get(Product.class, id);
+    public boolean delete(int id) {
+    Transaction transaction = null;
+    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        transaction = session.beginTransaction();
+        Product product = session.get(Product.class, id);
 
-            if (product != null) {
-                session.remove(product);
-                System.out.println("Product " + id + " was deleted");
-            }
-
+        if (product != null) {
+            session.remove(product);
+            System.out.println("Product " + id + " was deleted");
             transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            e.printStackTrace();
+            return true;
+        } else {
+            return false;
         }
+    } catch (Exception e) {
+        if (transaction != null) {
+            transaction.rollback();
+        }
+        e.printStackTrace();
+        return false;
     }
+}
 
     public Product getById(int id) {
         Transaction transaction = null;

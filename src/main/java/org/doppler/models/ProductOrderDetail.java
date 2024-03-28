@@ -17,7 +17,7 @@ public class ProductOrderDetail {
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private Order orderId;
+    private SaleOrder orderId;
 
     @Column(nullable = false)
     private int quantity;

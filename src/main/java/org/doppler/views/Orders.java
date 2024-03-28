@@ -4,10 +4,9 @@
  */
 package org.doppler.views;
 
-import org.doppler.dao.ServiceDao;
-import org.doppler.models.Service;
+import org.doppler.dao.SaleOrderDao;
+import org.doppler.models.SaleOrder;
 
-import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 
@@ -15,15 +14,41 @@ import java.util.List;
  *
  * @author Eddie
  */
-public class Services extends javax.swing.JPanel {
-    private ServiceDao serviceDao = new ServiceDao();
+public class Orders extends javax.swing.JPanel {
+    private SaleOrderDao saleOrderDao = new SaleOrderDao();
     /**
-     * Creates new form Services
+     * Creates new form Order
      */
-    public Services() {
+    public Orders() {
         initComponents();
-        loadServices();
+        loadOrders();
     }
+    private void loadOrders() {
+    try {
+        // get todas las ordenes
+        List<SaleOrder> saleOrders = saleOrderDao.getAll();
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+
+        // Limpiar la tabla
+        model.setRowCount(0);
+
+        // Iterar sobre las ordenes
+        for (SaleOrder order : saleOrders) {
+            model.addRow(new Object[]{
+                    order.getId(),
+                    order.getCustomerId().getName(),
+                    order.getOrderStatusId().getOrderStatusName(),
+                    order.getDate(),
+                    order.getTotal(),
+                    order.getTax(),
+                    order.getDiscount(),
+                    order.isRequiresInstallation()
+            });
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -49,7 +74,7 @@ public class Services extends javax.swing.JPanel {
         title.setBackground(new java.awt.Color(255, 255, 255));
         title.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         title.setForeground(new java.awt.Color(0, 0, 0));
-        title.setText("Services");
+        title.setText("Orders");
 
         jScrollPane1.setBackground(new java.awt.Color(0, 0, 0));
         jScrollPane1.setForeground(new java.awt.Color(255, 255, 255));
@@ -60,21 +85,21 @@ public class Services extends javax.swing.JPanel {
         jTable1.setForeground(new java.awt.Color(0, 0, 0));
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "ID", "Name", "Service"
+                "ID", "Customer", "Order Status", "Date", "Total", "Tax", "Discount", "Requires Installation"
             }
         ));
         jTable1.setGridColor(new java.awt.Color(0, 0, 0));
@@ -144,78 +169,26 @@ public class Services extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(background, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(background, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(background, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(background, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
-    private void loadServices() {
-        List<Service> services = serviceDao.getAll();
-        DefaultTableModel model = new DefaultTableModel();
 
-        // add columns to the model
-        model.addColumn("ID");
-        model.addColumn("Name");
-        model.addColumn("Price");
+    private void btn_editActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_editActionPerformed
+        AddOrder addOrder = new AddOrder();
+        addOrder.setVisible(true);
+    }//GEN-LAST:event_btn_editActionPerformed
 
-        // add rows to the model
-        for (Service service : services) {
-            model.addRow(new Object[]{
-                    service.getId(),
-                    service.getServiceName(),
-                    service.getPrice()
-            });
-        }
-        jTable1.setModel(model);
-    }
-    private void btn_editActionPerformed(java.awt.event.ActionEvent evt) {
-        int selectedRowIndex = jTable1.getSelectedRow();
-
-        if (selectedRowIndex != -1) {
-            int serviceId = (int) jTable1.getValueAt(selectedRowIndex, 0);
-            Service service = serviceDao.getById(serviceId);
-            AddServices addServices = new AddServices(service);
-            addServices.setVisible(true);
-            loadServices(); // reload services after editing
-        } else {
-            JOptionPane.showMessageDialog(null, "Please select a service to edit", "Warning", JOptionPane.WARNING_MESSAGE);
-        }
-    }                                        
-
-    private void btn_deleteActionPerformed(java.awt.event.ActionEvent evt) {
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-
-        // get index of the selected row
-        int selectedRowIndex = jTable1.getSelectedRow();
-
-        if (selectedRowIndex != -1) {
-            // get the service id from the selected row
-            int serviceId = (int) model.getValueAt(selectedRowIndex, 0);
-            // use DAO to delete the service
-            boolean isDeleted = serviceDao.delete(serviceId);
-
-            if (isDeleted) {
-                // show success message
-                model.removeRow(selectedRowIndex);
-                JOptionPane.showMessageDialog(null, "Service deleted successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(null, "Error deleting the service", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Please select a service to delete", "Warning", JOptionPane.WARNING_MESSAGE);
-        }
-    }                                          
+    private void btn_deleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_deleteActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btn_deleteActionPerformed
 
     private void btn_addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_addActionPerformed
-        AddServices addServices = new AddServices();
-        addServices.setVisible(true);
-        loadServices(); // reload services after adding a new one
+        AddOrder addOrder = new AddOrder();
+        addOrder.setVisible(true);
     }//GEN-LAST:event_btn_addActionPerformed
 
 

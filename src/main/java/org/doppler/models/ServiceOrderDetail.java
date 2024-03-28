@@ -13,7 +13,7 @@ public class ServiceOrderDetail {
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private Order orderId;
+    private SaleOrder orderId;
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)

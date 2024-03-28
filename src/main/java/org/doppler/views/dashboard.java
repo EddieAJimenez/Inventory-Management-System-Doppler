@@ -5,6 +5,8 @@
 package org.doppler.views;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatGitHubDarkIJTheme;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialLighterIJTheme;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -161,7 +163,7 @@ public class dashboard extends javax.swing.JFrame {
         btn_customers_info.setBackground(new java.awt.Color(140, 55, 182));
         btn_customers_info.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btn_customers_info.setIcon(new javax.swing.ImageIcon(getClass().getResource("/customer.png"))); // NOI18N
-        btn_customers_info.setText("Customers Information");
+        btn_customers_info.setText("Customers ");
         btn_customers_info.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 13, 1, 1, new java.awt.Color(0, 0, 0)));
         btn_customers_info.setBorderPainted(false);
         btn_customers_info.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -323,11 +325,11 @@ public class dashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_homeActionPerformed
 
     private void btn_new_orderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_new_orderActionPerformed
-        
+        showJPanel(new Orders());
     }//GEN-LAST:event_btn_new_orderActionPerformed
 
     private void btn_productsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_productsActionPerformed
-        
+        showJPanel(new Products());
     }//GEN-LAST:event_btn_productsActionPerformed
 
     private void btn_servicesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_servicesActionPerformed
@@ -343,7 +345,7 @@ public class dashboard extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
-        FlatMaterialLighterIJTheme.setup();
+        FlatGitHubDarkIJTheme.setup();
         UIManager.put("Button.arc", 999);
 
         /* Create and display the form */

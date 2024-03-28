@@ -1,14 +1,14 @@
 package org.doppler.dao;
 
 import org.doppler.db.HibernateUtil;
-import org.doppler.models.Order;
+import org.doppler.models.SaleOrder;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import java.util.List;
 
-public class OrderDao {
-    public void save(Order order) {
+public class SaleOrderDao {
+    public void save(SaleOrder order) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
@@ -23,7 +23,7 @@ public class OrderDao {
         }
     }
 
-    public void update(Order order) {
+    public void update(SaleOrder order) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
@@ -42,7 +42,7 @@ public class OrderDao {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            Order order = session.get(Order.class, id);
+            SaleOrder order = session.get(SaleOrder.class, id);
 
             if (order != null) {
                 session.remove(order);
@@ -58,12 +58,12 @@ public class OrderDao {
         }
     }
 
-    public Order getById(int id) {
+    public SaleOrder getById(int id) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
-            Order order = session.byId(Order.class).getReference(id);
+            SaleOrder order = session.byId(SaleOrder.class).getReference(id);
             transaction.commit();
             return order;
         } catch (Exception e) {
@@ -75,9 +75,9 @@ public class OrderDao {
         }
     }
 
-    public List<Order> getAll() {
+    public List<SaleOrder> getAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("from Order", Order.class).list();
+            return session.createQuery("from SaleOrder", SaleOrder.class).list();
         }
     }
 }
