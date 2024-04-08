@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.type.NumericBooleanConverter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +47,8 @@ public class SaleOrder {
     private List<ServiceOrderDetail> orderServices;
 
     public SaleOrder() {
+        this.orderProducts = new ArrayList<>();
+        this.orderServices = new ArrayList<>();
     }
 
     public SaleOrder(Customer customerId, OrderStatus orderStatusId, Date date, BigDecimal total, BigDecimal tax, BigDecimal discount, boolean requiresInstallation) {

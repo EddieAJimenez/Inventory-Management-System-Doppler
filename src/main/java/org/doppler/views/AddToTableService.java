@@ -8,10 +8,12 @@ import org.doppler.dao.ProductDao;
 import org.doppler.dao.ServiceDao;
 import org.doppler.models.Product;
 import org.doppler.models.Service;
+import java.util.HashMap;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -19,6 +21,7 @@ import java.util.List;
  */
 public class AddToTableService extends javax.swing.JFrame {
     private JTable jTableServicesAdded;
+    private Map<String, Double> servicePrices;
     private ServiceDao serviceDao = new ServiceDao();
     /**
      * Creates new form AddToTableService
@@ -26,6 +29,22 @@ public class AddToTableService extends javax.swing.JFrame {
     public AddToTableService(JTable jTableServicesAdded) {
         this.jTableServicesAdded = jTableServicesAdded;
         initComponents();
+    }
+
+    public AddToTableService(JTable jTableServicesAdded, Map<String, Double> servicePrices) {
+        this.jTableServicesAdded = jTableServicesAdded;
+        this.servicePrices = servicePrices;
+        initComponents();
+    }
+    public void addServiceToTable() {
+        String serviceName = (String) jComboBoxService.getSelectedItem();
+
+        // Obtener el precio del servicio del HashMap
+        Double price = servicePrices.get(serviceName);
+
+        // Agregar el servicio y su precio a la tabla
+        DefaultTableModel model = (DefaultTableModel) jTableServicesAdded.getModel();
+        model.addRow(new Object[]{serviceName, price});
     }
 
     /**
@@ -116,11 +135,7 @@ public class AddToTableService extends javax.swing.JFrame {
 
     private void btn_add_service_to_tableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_add_service_to_tableActionPerformed
         // TODO add your handling code here:
-        String service = (String) jComboBoxService.getSelectedItem();
-
-        // Agregar el servicio a la tabla
-        DefaultTableModel model = (DefaultTableModel) jTableServicesAdded.getModel();
-        model.addRow(new Object[]{service});
+        addServiceToTable();
     }//GEN-LAST:event_btn_add_service_to_tableActionPerformed
 
     /**

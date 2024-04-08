@@ -3,31 +3,44 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package org.doppler.views;
+
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialLighterIJTheme;
-import org.doppler.dao.CustomerDao;
-import org.doppler.dao.ProductDao;
-import org.doppler.dao.SaleOrderDao;
-import org.doppler.models.Customer;
-import org.doppler.models.Product;
-import org.doppler.models.SaleOrder;
+import jakarta.persistence.criteria.Order;
+import org.doppler.dao.*;
+import org.doppler.models.*;
+
+import javax.swing.*;
+
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import java.util.List;
 
 /**
- *
  * @author Eddie
  */
 public class AddOrder extends javax.swing.JFrame {
     private Map<String, Double> productPrices;
+    private Map<String, Double> servicePrices;
+    private List<Customer> customers;
+    private List<OrderStatus> orderStatus;
+    private List<Product> products;
+
     /**
      * Creates new form AddOrder
      */
     public AddOrder() {
         initComponents();
         loadProductPrices();
+        loadServicePrices();
+        loadCustomers();
+        loadOrderStatus();
     }
+
     private void loadProductPrices() {
         productPrices = new HashMap<>();
         try {
@@ -40,17 +53,60 @@ public class AddOrder extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
+
+    private void loadOrderStatus() {
+        try {
+            OrderStatusDao orderStatusDao = new OrderStatusDao();
+            orderStatus = orderStatusDao.getAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void loadCustomers() {
+        try {
+            CustomerDao customerDao = new CustomerDao();
+            customers = customerDao.getAll();
+            for (Customer customer : customers) {
+                String customerName = customer.getName();
+                jComboBoxCustomer.addItem(customerName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadServicePrices() {
+        servicePrices = new HashMap<>();
+        try {
+            ServiceDao serviceDao = new ServiceDao();
+            List<Service> services = serviceDao.getAll();
+            for (Service service : services) {
+                servicePrices.put(service.getServiceName(), service.getPrice());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void calculateAndShowTotal() {
         double totalCost = 0;
 
         // Sumar el costo total de los productos
         for (int i = 0; i < jTableProductsAdded.getRowCount(); i++) {
-            totalCost += (Double) jTableProductsAdded.getValueAt(i, 2); // Asume que la columna 2 contiene el costo total del producto
+            Object value = jTableProductsAdded.getValueAt(i, 2);
+            if (value != null) {
+                totalCost += ((Number) value).doubleValue();
+            }
         }
 
-        // Sumar el costo total de los servicios
+        // Sumar el precio de los servicios
         for (int i = 0; i < jTableServicesAdded.getRowCount(); i++) {
-            totalCost += (Double) jTableServicesAdded.getValueAt(i, 2); // Asume que la columna 2 contiene el costo total del servicio
+            Object value = jTableServicesAdded.getValueAt(i, 1);
+            if (value != null) {
+                totalCost += ((Number) value).doubleValue();
+            }
         }
 
         // Mostrar el total en el campo de texto 'total'
@@ -102,12 +158,12 @@ public class AddOrder extends javax.swing.JFrame {
         jTableProductsAdded.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jTableProductsAdded.setForeground(new java.awt.Color(0, 0, 0));
         jTableProductsAdded.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
-                "Item", "Quantity", "Total"
-            }
+                },
+                new String[]{
+                        "Item", "Quantity", "Total"
+                }
         ));
         jScrollPane1.setViewportView(jTableProductsAdded);
 
@@ -115,16 +171,16 @@ public class AddOrder extends javax.swing.JFrame {
         jTableServicesAdded.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jTableServicesAdded.setForeground(new java.awt.Color(0, 0, 0));
         jTableServicesAdded.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
+                },
+                new String[]{
+                        "Title 1", "Title 2", "Title 3", "Title 4"
+                }
         ));
         jScrollPane2.setViewportView(jTableServicesAdded);
 
-        jComboBoxCustomer.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBoxCustomer.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
         jComboBoxCustomer.removeAllItems();
         try {
             CustomerDao customerDao = new CustomerDao();
@@ -176,7 +232,18 @@ public class AddOrder extends javax.swing.JFrame {
             }
         });
 
-        jComboBoxOrderStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBoxOrderStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
+        jComboBoxOrderStatus.removeAllItems();
+        try {
+            OrderStatusDao orderStatusDao = new OrderStatusDao();
+            List<OrderStatus> orderStatuses = orderStatusDao.getAll();
+
+            for (OrderStatus orderStatus : orderStatuses) {
+                jComboBoxOrderStatus.addItem(orderStatus.getOrderStatusName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         customerTxt1.setText("Date");
 
@@ -209,130 +276,249 @@ public class AddOrder extends javax.swing.JFrame {
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btn_CreateOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(109, 109, 109))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(86, 86, 86)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 911, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 911, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(customerTxt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jComboBoxCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(customerTxt1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(customerTxt2, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(date, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tax, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(customerTxt3, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btn_addServiceToOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btn_addProductToOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(195, 195, 195)
-                                .addComponent(jLabel3))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(412, 412, 412)
-                                .addComponent(jLabel1))
-                            .addComponent(total, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(customerTxt5, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(discount, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(customerTxt4, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(jComboBoxOrderStatus, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jCheckBoxInstallation))))
-                .addGap(0, 125, Short.MAX_VALUE))
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btn_CreateOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(109, 109, 109))
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(86, 86, 86)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                .addGap(0, 0, Short.MAX_VALUE)
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 911, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 911, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                                .addComponent(customerTxt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                .addComponent(jComboBoxCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addComponent(customerTxt1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                        .addComponent(customerTxt2, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(date, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(tax, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(customerTxt3, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(btn_addServiceToOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                                .addComponent(btn_addProductToOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(195, 195, 195)
+                                                                .addComponent(jLabel3))
+                                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                                .addGap(412, 412, 412)
+                                                                .addComponent(jLabel1))
+                                                        .addComponent(total, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(customerTxt5, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(discount, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(customerTxt4, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                                .addComponent(jComboBoxOrderStatus, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                        .addComponent(jCheckBoxInstallation))))
+                                .addGap(0, 125, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(50, 50, 50)
-                .addComponent(customerTxt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jComboBoxCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(customerTxt4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(discount, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(customerTxt1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(date, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(customerTxt5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckBoxInstallation)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(customerTxt2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(total, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(customerTxt3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBoxOrderStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tax, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(32, 32, 32)
-                        .addComponent(jLabel3))
-                    .addComponent(btn_addProductToOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_addServiceToOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(13, 13, 13)
-                .addComponent(btn_CreateOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(182, 182, 182))
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(50, 50, 50)
+                                .addComponent(customerTxt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jComboBoxCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addComponent(customerTxt4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(discount, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(customerTxt1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(date, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addComponent(customerTxt5)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jCheckBoxInstallation)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addComponent(customerTxt2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(total, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(customerTxt3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(0, 0, Short.MAX_VALUE)
+                                                .addComponent(jLabel2)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jComboBoxOrderStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(tax, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(27, 27, 27)
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(32, 32, 32)
+                                                .addComponent(jLabel3))
+                                        .addComponent(btn_addProductToOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btn_addServiceToOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(13, 13, 13)
+                                .addComponent(btn_CreateOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(182, 182, 182))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 917, javax.swing.GroupLayout.PREFERRED_SIZE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 917, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_addServiceToOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_addServiceToOrderActionPerformed
-        // TODO add your handling code here:
-        AddToTableService addtoTableServiceWindow = new AddToTableService(jTableServicesAdded);
-        addtoTableServiceWindow.setVisible(true);
-        calculateAndShowTotal();
+        AddToTableService addToTableServiceWindow = new AddToTableService(jTableServicesAdded, servicePrices);
+        addToTableServiceWindow.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                calculateAndShowTotal();
+            }
+        });
+        addToTableServiceWindow.setVisible(true);
     }//GEN-LAST:event_btn_addServiceToOrderActionPerformed
 
     private void btn_CreateOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_CreateOrderActionPerformed
-        // TODO add your handling code here:
+        try {
+            Customer selectedCustomer = getSelectedCustomer();
+            OrderStatus selectedOrderStatus = getSelectedOrderStatus();
+            BigDecimal total = getTotal();
+            boolean requiresInstallation = jCheckBoxInstallation.isSelected();
+
+            SaleOrder order = createOrder(selectedCustomer, selectedOrderStatus, total, requiresInstallation);
+            saveOrder(order);
+            addProductsToOrder(order);
+            addServicesToOrder(order);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Failed to create order: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btn_CreateOrderActionPerformed
 
+    private Customer getSelectedCustomer() {
+        String selectedCustomerName = (String) jComboBoxCustomer.getSelectedItem();
+        return customers.stream()
+                .filter(customer -> customer.getName().equals(selectedCustomerName))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Client not found"));
+    }
+
+    private OrderStatus getSelectedOrderStatus() {
+        String selectedOrderStatusName = (String) jComboBoxOrderStatus.getSelectedItem();
+        return orderStatus.stream()
+                .filter(orderStatus -> orderStatus.getOrderStatusName().equals(selectedOrderStatusName))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Order status not found"));
+    }
+
+    private BigDecimal getTotal() {
+        try {
+            String totalText = this.total.getText().replace(',', '.');
+            String discountText = this.discount.getText().replace(',', '.');
+            String taxText = this.tax.getText().replace(',', '.');
+            BigDecimal totalAmount = new BigDecimal(totalText);
+            BigDecimal discountAmount = new BigDecimal(discountText);
+            BigDecimal taxAmount = new BigDecimal(taxText);
+            return totalAmount.subtract(discountAmount).add(taxAmount);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Please enter a valid number for total, discount, and tax");
+        }
+    }
+
+    private SaleOrder createOrder(Customer selectedCustomer, OrderStatus selectedOrderStatus, BigDecimal total, boolean requiresInstallation) {
+        SaleOrder order = new SaleOrder();
+        order.setCustomerId(selectedCustomer);
+        order.setOrderStatusId(selectedOrderStatus);
+        order.setDate(new Date());
+        order.setTotal(total);
+        String taxText = this.tax.getText().replace(',', '.');
+        BigDecimal taxAmount = new BigDecimal(taxText);
+        order.setTax(taxAmount);
+        BigDecimal discountAmount = new BigDecimal(this.discount.getText().replace(',', '.'));
+        order.setDiscount(discountAmount);
+        order.setRequiresInstallation(requiresInstallation);
+        return order;
+    }
+
+    private void saveOrder(SaleOrder order) {
+        SaleOrderDao saleOrderDao = new SaleOrderDao();
+        saleOrderDao.save(order);
+        JOptionPane.showMessageDialog(this, "Order created successfully!");
+    }
+
+    private void addProductsToOrder(SaleOrder order) {
+        ProductDao productDao = new ProductDao();
+        List<Product> products = productDao.getAll();
+
+        for (int i = 0; i < jTableProductsAdded.getRowCount(); i++) {
+            String productName = (String) jTableProductsAdded.getValueAt(i, 0);
+            int quantity = (Integer) jTableProductsAdded.getValueAt(i, 1);
+            BigDecimal total = BigDecimal.valueOf((Double) jTableProductsAdded.getValueAt(i, 2));
+
+            Product productObject = products.stream()
+                    .filter(product -> product.getProductName().equals(productName))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + productName));
+
+            ProductOrderDetail productOrderDetail = new ProductOrderDetail();
+            productOrderDetail.setOrderId(order);
+            productOrderDetail.setProductId(productObject);
+            productOrderDetail.setQuantity(quantity);
+            productOrderDetail.setSubtotal(total);
+
+            ProductOrderDetailDao productOrderDetailDao = new ProductOrderDetailDao();
+            productOrderDetailDao.save(productOrderDetail);
+        }
+
+    }
+
+    private void addServicesToOrder(SaleOrder order) {
+        ServiceDao serviceDao = new ServiceDao();
+        List<Service> services = serviceDao.getAll();
+
+        ServiceStatus defaultServiceStatus = new ServiceStatus();
+        defaultServiceStatus.setId(1);
+
+        for (int i = 0; i < jTableServicesAdded.getRowCount(); i++) {
+            String serviceName = (String) jTableServicesAdded.getValueAt(i, 0);
+            BigDecimal total = BigDecimal.valueOf((Double) jTableServicesAdded.getValueAt(i, 1));
+
+            Service serviceObject = services.stream()
+                    .filter(service -> service.getServiceName().equals(serviceName))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Service not found: " + serviceName));
+
+            ServiceOrderDetail serviceOrderDetail = new ServiceOrderDetail();
+            serviceOrderDetail.setOrderId(order);
+            serviceOrderDetail.setServiceId(serviceObject);
+            serviceOrderDetail.setSubtotal(total);
+            serviceOrderDetail.setServiceStatusId(defaultServiceStatus);
+
+            ServiceOrderDetailDao serviceOrderDetailDao = new ServiceOrderDetailDao();
+            serviceOrderDetailDao.save(serviceOrderDetail);
+        }
+    }
+
     private void btn_addProductToOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_addProductToOrderActionPerformed
-        // TODO add your handling code here:
         AddToTableProduct addToTableProductWindow = new AddToTableProduct(jTableProductsAdded, productPrices);
         addToTableProductWindow.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -370,7 +556,7 @@ public class AddOrder extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(AddOrder.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-       
+
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {

@@ -9,6 +9,7 @@ import org.doppler.models.Product;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,8 @@ public class AddToTableProduct extends javax.swing.JFrame {
     private JTable jTableProductsAdded;
     private Map<String, Double> productPrices;
     private ProductDao productDao = new ProductDao();
+    private Product product;
+
     /**
      * Creates new form AddToTableProduct
      */
@@ -30,11 +33,17 @@ public class AddToTableProduct extends javax.swing.JFrame {
         initComponents();
     }
     public void addProductToTable() {
-        String productName = (String) jComboBoxProduct.getSelectedItem();
+        String selectedItem = (String) jComboBoxProduct.getSelectedItem();
+        String productName = selectedItem.split(" - Price: ")[0]; // Cambiar " - Quantity: " por " - Price: "
         int quantity = Integer.parseInt(Quantity.getText());
 
         // Obtener el precio del producto del HashMap
         Double price = productPrices.get(productName);
+
+        if (price == null) {
+            System.out.println("couldn't find the price for : " + productName);
+            return;
+        }
 
         // Multiply price with quantity
         Double totalCost = price * quantity;
@@ -65,19 +74,15 @@ public class AddToTableProduct extends javax.swing.JFrame {
         jComboBoxProduct.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         jComboBoxProduct.removeAllItems();
         try {
-            // Crear una instancia de ProductDao
             ProductDao productDao = new ProductDao();
 
-            // get del db
             List<Product> products = productDao.getAll();
 
-            // Iterar
             for (Product product : products) {
-                // get el name
-                String productName = product.getProductName(); // Asegúrate de que este es el método correcto
+                String productName = product.getProductName();
+                BigDecimal price = product.getPrice(); // Obtener el precio del producto
 
-                // add al combobox
-                jComboBoxProduct.addItem(productName);
+                jComboBoxProduct.addItem(productName + " - Price: " + price);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,7 +191,6 @@ public class AddToTableProduct extends javax.swing.JFrame {
             public void run() {
                 JTable tempTable = new JTable();
                 Map<String, Double> productPrices = new HashMap<>();
-                // Aquí debes cargar los precios de los productos en productPrices
                 new AddToTableProduct(tempTable, productPrices).setVisible(true);
             }
         });

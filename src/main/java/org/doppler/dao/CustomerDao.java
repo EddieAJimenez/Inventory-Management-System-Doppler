@@ -80,6 +80,7 @@ public class CustomerDao {
         }
     }
 
+
     public List<Customer> getAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("from Customer", Customer.class).list();
