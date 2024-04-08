@@ -4,9 +4,14 @@
  */
 package org.doppler.views;
 
+import org.doppler.dao.ProductOrderDetailDao;
 import org.doppler.dao.SaleOrderDao;
+import org.doppler.dao.ServiceOrderDetailDao;
+import org.doppler.models.ProductOrderDetail;
 import org.doppler.models.SaleOrder;
+import org.doppler.models.ServiceOrderDetail;
 
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 
@@ -178,12 +183,64 @@ public class Orders extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_editActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_editActionPerformed
-        AddOrder addOrder = new AddOrder();
-        addOrder.setVisible(true);
+        // get the selected row
+        int selectedRow = jTable1.getSelectedRow();
+        if (selectedRow >= 0) {
+            // Extract the Order ID from the selected row
+            int orderId = (int) jTable1.getValueAt(selectedRow, 0);
+
+            // daos instances
+            SaleOrderDao saleOrderDao = new SaleOrderDao();
+
+            // Get the order
+            SaleOrder order = saleOrderDao.getById(orderId);
+
+            // Open the AddOrder form with the existing order
+            AddOrder addOrder = new AddOrder(order);
+            addOrder.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select an order to edit.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btn_editActionPerformed
 
     private void btn_deleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_deleteActionPerformed
-        // TODO add your handling code here:
+        // get the selected row
+        int selectedRow = jTable1.getSelectedRow();
+        if (selectedRow >= 0) {
+            // Extract the Order ID from the selected row
+            int orderId = (int) jTable1.getValueAt(selectedRow, 0);
+
+            // daos instances
+            ProductOrderDetailDao productOrderDetailDao = new ProductOrderDetailDao();
+            ServiceOrderDetailDao serviceOrderDetailDao = new ServiceOrderDetailDao();
+            SaleOrderDao saleOrderDao = new SaleOrderDao();
+
+            // Get all ProductOrderDetails and ServiceOrderDetails for the order
+            List<ProductOrderDetail> productOrderDetails = productOrderDetailDao.getAll();
+            List<ServiceOrderDetail> serviceOrderDetails = serviceOrderDetailDao.getAll();
+
+            // Delete all ProductOrderDetails for the order
+            for (ProductOrderDetail productOrderDetail : productOrderDetails) {
+                if (productOrderDetail.getOrderId().getId() == orderId) {
+                    productOrderDetailDao.delete(productOrderDetail.getId());
+                }
+            }
+
+            // Delete all ServiceOrderDetails for the order
+            for (ServiceOrderDetail serviceOrderDetail : serviceOrderDetails) {
+                if (serviceOrderDetail.getOrderId().getId() == orderId) {
+                    serviceOrderDetailDao.delete(serviceOrderDetail.getId());
+                }
+            }
+
+            // Delete the order
+            saleOrderDao.delete(orderId);
+
+            // reload the orders
+            loadOrders();
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select an order to delete.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btn_deleteActionPerformed
 
     private void btn_addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_addActionPerformed

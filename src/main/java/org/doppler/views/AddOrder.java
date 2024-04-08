@@ -8,6 +8,7 @@ import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialLighte
 import jakarta.persistence.criteria.Order;
 import org.doppler.dao.*;
 import org.doppler.models.*;
+import javax.swing.table.DefaultTableModel;
 
 import javax.swing.*;
 
@@ -29,6 +30,8 @@ public class AddOrder extends javax.swing.JFrame {
     private List<Customer> customers;
     private List<OrderStatus> orderStatus;
     private List<Product> products;
+    private boolean isEditing;
+    private SaleOrder existingOrder;
 
     /**
      * Creates new form AddOrder
@@ -39,6 +42,71 @@ public class AddOrder extends javax.swing.JFrame {
         loadServicePrices();
         loadCustomers();
         loadOrderStatus();
+    }
+    public AddOrder(SaleOrder order) {
+        this.isEditing = true;
+        this.existingOrder = order;
+        initComponents();
+        loadProductPrices();
+        loadServicePrices();
+        loadCustomers();
+        loadOrderStatus();
+        loadEditWindow();
+    }
+
+    private void loadEditWindow() {
+        // Fill in the form fields with the existing order data
+        jComboBoxCustomer.setSelectedItem(this.existingOrder.getCustomerId().getName());
+        jComboBoxOrderStatus.setSelectedItem(this.existingOrder.getOrderStatusId().getOrderStatusName());
+        date.setText(this.existingOrder.getDate().toString());
+        total.setText(this.existingOrder.getTotal().toString());
+        tax.setText(this.existingOrder.getTax().toString());
+        discount.setText(this.existingOrder.getDiscount().toString());
+        jCheckBoxInstallation.setSelected(this.existingOrder.isRequiresInstallation());
+
+        // Load the products and services associated with the order
+        ProductDao productDao = new ProductDao();
+        List<Product> products = productDao.getAll();
+
+        for (int i = 0; i < jTableProductsAdded.getRowCount(); i++) {
+            int productId = (Integer) jTableProductsAdded.getValueAt(i, 0);
+            int quantity = (Integer) jTableProductsAdded.getValueAt(i, 1);
+            BigDecimal total = BigDecimal.valueOf((Double) jTableProductsAdded.getValueAt(i, 2));
+
+            Product productObject = products.stream()
+                    .filter(product -> product.getId() == productId)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+        }
+        DefaultTableModel productsModel = (DefaultTableModel) jTableProductsAdded.getModel();
+        for (Product product : products) {
+            Object[] row = new Object[3];
+            row[0] = product.getId();
+            row[1] = product.getQuantity();
+            row[2] = product.getPrice();
+            productsModel.addRow(row);
+        }
+
+        // Fill jTableServicesAdded with the services of the existing order
+        ServiceDao serviceDao = new ServiceDao();
+        List<Service> services = serviceDao.getAll();
+
+        for (int i = 0; i < jTableServicesAdded.getRowCount(); i++) {
+            int serviceId = (Integer) jTableServicesAdded.getValueAt(i, 0);
+            BigDecimal total = BigDecimal.valueOf((Double) jTableServicesAdded.getValueAt(i, 1));
+
+            Service serviceObject = services.stream()
+                    .filter(service -> service.getId() == serviceId)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
+        }
+        DefaultTableModel servicesModel = (DefaultTableModel) jTableServicesAdded.getModel();
+        for (Service service : services) {
+            Object[] row = new Object[2];
+            row[0] = service.getId();
+            row[1] = service.getPrice();
+            servicesModel.addRow(row);
+        }
     }
 
     private void loadProductPrices() {
@@ -399,18 +467,33 @@ public class AddOrder extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_addServiceToOrderActionPerformed
 
     private void btn_CreateOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_CreateOrderActionPerformed
+        SaleOrderDao saleOrderDao = new SaleOrderDao();
         try {
             Customer selectedCustomer = getSelectedCustomer();
             OrderStatus selectedOrderStatus = getSelectedOrderStatus();
             BigDecimal total = getTotal();
             boolean requiresInstallation = jCheckBoxInstallation.isSelected();
 
-            SaleOrder order = createOrder(selectedCustomer, selectedOrderStatus, total, requiresInstallation);
-            saveOrder(order);
+            SaleOrder order;
+            if (isEditing) {
+                // Update the existing order
+                order = this.existingOrder;
+                order.setCustomerId(selectedCustomer);
+                order.setOrderStatusId(selectedOrderStatus);
+                order.setTotal(total);
+                order.setRequiresInstallation(requiresInstallation);
+                saleOrderDao.update(order);
+                JOptionPane.showMessageDialog(this, "Order updated successfully!");
+            } else {
+                // Create a new order
+                order = createOrder(selectedCustomer, selectedOrderStatus, total, requiresInstallation);
+                saveOrder(order);
+            }
+
             addProductsToOrder(order);
             addServicesToOrder(order);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Failed to create order: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            //JOptionPane.showMessageDialog(this, "Failed to create order: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btn_CreateOrderActionPerformed
 

@@ -4,6 +4,7 @@ import org.doppler.db.HibernateUtil;
 import org.doppler.models.ServiceOrderDetail;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.util.List;
 
@@ -77,7 +78,8 @@ public class ServiceOrderDetailDao {
 
     public List<ServiceOrderDetail> getAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("from Services", ServiceOrderDetail.class).list();
+            return session.createQuery("from ServiceOrderDetail", ServiceOrderDetail.class).list();
         }
     }
+
 }

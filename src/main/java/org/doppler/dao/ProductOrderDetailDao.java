@@ -4,6 +4,7 @@ import org.doppler.db.HibernateUtil;
 import org.doppler.models.ProductOrderDetail;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.util.List;
 
